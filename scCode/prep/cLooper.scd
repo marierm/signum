@@ -1,7 +1,7 @@
 ~cLooper = {
 	arg inBus, id=0, outBus=0, numChan=2, lag=1.0, bufDur=60, numLoops=16, server;
 	var isRec, isPlaying, recBuffers, bus;
-	var recLev = 0.9, preLev = 0.9, releaseTime=22;
+	var recLev = 0.9, preLev = 0.9;
 	var oscFunc, recorder, loopPlayers;
 	var loopDur, nextLoopId=0, task, nextLoopToStop=0;
 	var prep = {
@@ -59,7 +59,6 @@
 						\out, outBus,
 						\bufnum, recBuffers[nextLoopId],
 						\atk, 1,
-						\rel, releaseTime,
 						\amp, 1,
 						\gate, 1,
 						\rate, 1.0,
@@ -77,12 +76,12 @@
 		currentEnvironment;
 	};
 
-	var stopPlayback = {
+	var stopPlayback = { |dur=17|
 		loopPlayers.do({ |i|
-			i.set(\gate, 0);
+			i.release(dur);
 		});
 		isPlaying = Array.fill(numLoops, { false });
-		server.makeBundle(releaseTime, {  
+		server.makeBundle(dur, {  
 			recBuffers.do({ |buffer| // zero the buffers;
 				buffer.zero
 			});
@@ -90,11 +89,11 @@
 		nextLoopId = 0;
 	};
 
-	var stopPlaybackSingleLoop = {
+	var stopPlaybackSingleLoop = { |dur=17|
 		isPlaying[nextLoopToStop].if({
 			loopPlayers[nextLoopToStop].set(\gate, 0);
 			isPlaying[nextLoopToStop] = false;
-			server.makeBundle(releaseTime, {  
+			server.makeBundle(dur, {  
 				recBuffers[nextLoopToStop].zero;
 			});
 			nextLoopToStop = (nextLoopToStop + 1) % numLoops;
@@ -163,7 +162,7 @@
 		loopDur: { loopDur },
 		prep: { prep.value },
 		toggleRec: { toggleRec.value },
-		stopPlayback: { stopPlayback.value },
+		stopPlayback: { |event, dur| stopPlayback.value(dur) },
 		stopPlaybackSingleLoop: { stopPlaybackSingleLoop.value },
 		freeMe: { freeMe.value }
 	);

@@ -13,7 +13,7 @@
 
 	"killall reaper5".unixCmd; //kill reaper.
 	// "nmcli con up sponger".unixCmd; // Make this computer a hotspot.
-	"nmcli con up sudafed".unixCmd; // Connect to sudafedn
+	"nmcli con up sudafed".unixCmd; // Connect to sudafed
 
 	// ~cond = Condition.new;
 	("reaper5" + ~rppFilePath).unixCmd;
@@ -28,6 +28,8 @@
 	// "prep/cPopperRzn.scd".loadRelative;
 	// "prep/cPopper.scd".loadRelative;
 	// "prep/cPlayer.scd".loadRelative;
+	"prep/gui.scd".loadRelative;
+	
 	s.sync;
 	1.wait;
 	// ~ipsPrefix = "192.168.109.";
@@ -129,14 +131,11 @@
 		var sym = (~spongeNames[j] ++ "_" ++ i).asSymbol;
 		~sponges[sym].sponge.hold_(false);
 	});
-	"prep/gui.scd".loadRelative;
 	{
-		// a = ~quintetGui.value([100,98,97,101,99]);
-		// order is francis, ana, martin, emilie, preston
-		a = ~quintetGui.value(~ips, ~spongeNames);
-		a.window.front;
+		~gui = ~quintetGui.value(~ips, ~spongeNames);
+		~gui.window.front;
 	}.defer;
-}.fork
+}.fork;
 )
 
 

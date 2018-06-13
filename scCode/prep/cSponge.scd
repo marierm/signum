@@ -165,7 +165,9 @@
 					\octVbStuck.post; h.postln;
 					~voices.at(defName)[fmVoice].octVb;
 				},
-				levels: (0..15),
+				levels: [0] ++ (2..15), // skip level one because it
+										// could be used for other
+										// things.
 				buttState: 1
 			);
 
@@ -176,7 +178,8 @@
 					\octVaStuck.post; h.postln;
 					~voices.at(defName)[fmVoice].octVa;
 				},
-				levels: (0..15),
+				levels: [0] ++ (2..15), // skip level one because it
+										// is used to fade out loop.
 				buttState: 1
 			);
 
@@ -204,8 +207,17 @@
 			butts.modes[pitchMode].addFunc(
 				button: 8,
 				function: {
-					"Stop loop playback ".post; h.postln;
-					~voices.at(defName)[fmVoice].looper.stopPlayback;
+					"Stop loop playback 17".post;
+					~voices.at(defName)[fmVoice].looper.stopPlayback(17);
+				},
+				levels: [1],
+				buttState: 1
+			);
+						butts.modes[pitchMode].addFunc(
+				button: 7,
+				function: {
+					"Stop loop playback 1.".post;
+					~voices.at(defName)[fmVoice].looper.stopPlayback(1);
 				},
 				levels: [1],
 				buttState: 1
@@ -679,15 +691,25 @@
 				levels: (0..15),
 				buttState: 1
 			);
-			butts.modes[harmoModePop].addFunc(
+			butts.modes[harmoModePop].addFunc( // fade in 10 seconds
 				button: 8,
 				function: {
 					\stopPlayback.post; h.postln;
-					~voices.at(defName)[popVoice].looper.stopPlayback;
+					~voices.at(defName)[popVoice].looper.stopPlayback(10);
 				},
 				levels: [1],
 				buttState: 1
 			);
+			butts.modes[harmoModePop].addFunc( // fade in 1 seconds
+				button: 7,
+				function: {
+					\stopPlayback.post; h.postln;
+					~voices.at(defName)[popVoice].looper.stopPlayback(1);
+				},
+				levels: [1],
+				buttState: 1
+			);
+
 		});
 	};
 
