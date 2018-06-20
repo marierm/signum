@@ -1,0 +1,20 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:nil todo:t |:t
+#+TITLE: SIGNUM
+#+DATE: <2018-06-20 Wed>
+#+AUTHOR: Martin Marier
+#+EMAIL: martin@martinmarier.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 26.1 (Org mode 9.1.13)
+
+* 
+  This repository contains some files used in the /Signum/ project,
+  which involves Rodrigo Sigal, Alejandro Escuar, Patrick Saint-Denis
+  and Martin Marier.  Most of the code here is used with the Sponge
+  (digital musical instrument).
+  
