@@ -1,59 +1,83 @@
 (
 {
-	var sym = "sponge_solo".asSymbol;
+	// "nmcli con up sponger".unixCmd; // Make this computer a hotspot.
+	// "nmcli con up sudafed".unixCmd; // Connect to sudafed
 	s.bootSync;
-	"prep/sponge.scd".loadRelative;
-	"prep/parents.scd".loadRelative;
-	"prep/parentsFm.scd".loadRelative;
-	"prep/fm.scd".loadRelative;
-	s.sync;
-	PR(\sponge).chuck(BP(sym), parms:(
-		defName: sym
-	));
-	BP(sym).play;
-	s.sync;
-	BP(sym).sponge.hold_(true);
-	PR(\fm).chuck(BP( (sym ++ 0).asSymbol ), parms:(
-		interpolatorPath: ("fm0*").resolveRelative.pathMatch.sort.last.resolveRelative,
-		sponge: BP(sym).sponge,
-		outBus: 0,
-		notes: ([ \en1, \en2, \en3].keynum.mirror2.clump(3)).flat + (0 * 12),
-		// notes: ([ \bb0, \bb1, \bb2].keynum.mirror2.clump(3)).flat + (i * 12),
-		numNotes: 6,
-		fmId: 20,
-		fsrMuteThreshold: 0.85, // larger number = muting is easier
-		chords: [
-			[ \en1, \en2, \en3, \en3, \en2, \en1].keynum,
-			// [ \fs7, \bn7, \en8, \en7, \bf7, \cn8].keynum - 12,
-			[ \en2, \en3, \gn3, \dn4, \fs4, \bn4].keynum,
-			[ \en2, \dn3, \fs3, \dn4, \fs4, \bn4].keynum,
-			[ \en2, \cn3, \gn3, \dn4, \fs4, \bn4].keynum,
-			[ \en2, \bn2, \an3, \dn4, \fs4, \bn4].keynum,
-			[ \en2, \en3, \cn4, \dn4, \fs4, \bn4].keynum,
-			[ \en2, \dn3, \gn3, \cn4, \fs4, \bn4].keynum,
-			[ \en2, \cn3, \gn3, \bn3, \fs4, \bn4].keynum,
-			[ \en2, \dn3, \fs3, \bn3, \en4, \an4].keynum,
-			[ \fs7, \bn7, \en8, \en7, \bf7, \cn8].keynum - 48,
-			[ \fn7, \bf7, \ef8, \en7, \bf7, \cn8].keynum - 48,
-			[ \en7, \an7, \cs8, \ef7, \af7, \dn8].keynum - 48,
-			[ \gf7, \an7, \cn8, \fn7, \af7, \df8].keynum - 48,
-			[ \gf7, \an7, \cn8, \fn7, \bf7, \dn8].keynum - 48,
-			[ \gf7, \an7, \cn8, \fn7, \bn7, \dn8].keynum - 48,
-			[ \gn7, \an7, \cn8, \fn7, \bn7, \dn8].keynum - 48,
-			[ \gn7, \an7, \cn8, \fn7, \fn8, \dn8].keynum - 48
-		],
-		defName: sym
-	));
-	s.sync;
-	BP(sym).sponge.hold_(false);
-	s.sync;
-	sym.post; " ready.".postln;
+	"prep/cSponge.scd".loadRelative;
+	"prep/cSimpleSponge.scd".loadRelative;
+	"prep/cLooper.scd".loadRelative;
+	"prep/cFm.scd".loadRelative;
 	"prep/gui.scd".loadRelative;
+	s.sync;
+	~ipsPrefix = "192.168.0."; // for sudafed
+	~ips = [174];
+	~spongeNames = ["zebra"];
+	~classes = [~cSimpleSponge];
+	~transpose = 0;
+	~sponges = IdentityDictionary.new();
+	~voices = IdentityDictionary.new();
+	~ips.do({ |i, j|
+		// var sym = ("sponge_" ++ i.asAscii).asSymbol;
+		var sym = (~spongeNames[j] ++ "_" ++ i).asSymbol;
+		sym.postln;
+		~sponges.put( sym, ~classes[j].value( ~ipsPrefix ++ i, sym, Server.default ) );
+		~sponges[sym].postln;
+		~sponges[sym].prep;
+		s.sync;
+		1.wait;
+		~sponges[sym].sponge.hold_(true);
+		~voices.put( sym, List[] );
+		~voices[sym].add( // add fm synth to voice 0 of each sponge.
+			~cFmManager.value(
+				interpolatorPath: ("fm0*").resolveRelative.pathMatch.sort.last.resolveRelative,
+				cSponge: ~sponges[sym],
+				notes: ([ \en1, \en2, \en3].keynum.mirror2.clump(3)).flat + (0 * 12) + ~transpose,
+				chords: [
+					[ \en1, \en2, \en3, \en3, \en2, \en1].keynum + ~transpose,
+					// [ \fs7, \bn7, \en8, \en7, \bf7, \cn8].keynum - 12,
+					[ \en1, \en2, \gn2, \dn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \dn2, \fs2, \dn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \cn2, \gn2, \dn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \bn1, \an2, \dn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \en2, \cn3, \dn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \dn2, \gn2, \cn3, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \cn2, \gn2, \bn2, \fs3, \bn3].keynum + ~transpose,
+					[ \en1, \dn2, \fs2, \bn2, \en3, \an3].keynum + ~transpose,
+					[ \fs1, \bn1, \en2, \en1, \bf1, \cn2].keynum + ~transpose,
+					[ \fn1, \bf1, \ef2, \en1, \bf1, \cn2].keynum + ~transpose,
+					[ \en1, \an1, \cs2, \ef1, \af1, \dn2].keynum + ~transpose,
+					[ \gf1, \an1, \cn2, \fn1, \af1, \df2].keynum + ~transpose,
+					[ \gf1, \an1, \cn2, \fn1, \bf1, \dn2].keynum + ~transpose,
+					[ \gf1, \an1, \cn2, \fn1, \bn1, \dn2].keynum + ~transpose,
+					[ \gn1, \an1, \cn2, \fn1, \bn1, \dn2].keynum + ~transpose,
+					[ \gn1, \an1, \cn2, \fn1, \fn2, \dn2].keynum + ~transpose
+				],
+				outBus: j * 2,
+				fsrMuteThreshold: 0.85, // larger number = muting is easier
+				fmId: j + 20,
+				relTime: 0.2,
+				server: s,
+				withLoop: (~classes[0] == ~cSponge )
+			)
+		);
+		///////////////
+		s.sync;
+		1.wait;
+		~voices.at(sym).do({|i| i.prep});
+		s.sync;
+		// 1.wait;
+		sym.post; " ready.".postln;
+	});
+	s.sync;
+
+	~ips.do({ |i,j|
+		var sym = (~spongeNames[j] ++ "_" ++ i).asSymbol;
+		~sponges[sym].sponge.hold_(false);
+	});
 	{
-		a = ~quintetGui.value(["solo".ascii]);
-		a.window.front;
+		~gui = ~quintetGui.value(~ips, ~spongeNames);
+		~gui.window.front;
 	}.defer;
-}.fork
+}.fork;
 )
-
-
+~sponges[\zebra_174].sponge.hold_(false)
