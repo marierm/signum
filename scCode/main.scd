@@ -6,6 +6,7 @@
 (
 {
 	~scJackName="SuperCollider:out_"; //for Jack connections
+	~scJackNameIn="SuperCollider:in_"; //for Jack connections
 	// ~scJackName="supernova:output_"; //for Jack connections
 	~reaperInJackName="REAPER:in";
 
@@ -13,7 +14,7 @@
 
 	"killall reaper5".unixCmd; //kill reaper.
 	// "nmcli con up sponger".unixCmd; // Make this computer a hotspot.
-	"nmcli con up sudafed".unixCmd; // Connect to sudafed
+	// "nmcli con up sudafed".unixCmd; // Connect to sudafed
 
 	// ~cond = Condition.new;
 	("reaper5" + ~rppFilePath).unixCmd;
@@ -23,8 +24,10 @@
 	s.bootSync;
 	"/home/marierm/scripts/jackDisconnectEverything.py".unixCmd;
 	"prep/cSponge.scd".loadRelative;
+	"prep/cSimpleSponge.scd".loadRelative;
 	"prep/cLooper.scd".loadRelative;
 	"prep/cFm.scd".loadRelative;
+	// "prep/triggeredByVideo.scd".loadRelative;
 	// "prep/cPopperRzn.scd".loadRelative;
 	// "prep/cPopper.scd".loadRelative;
 	// "prep/cPlayer.scd".loadRelative;
@@ -47,20 +50,26 @@
 	// ~ips = [123, 141]; // ana + flowers
 	// ~ips = [123, 140, 141]; // ana + stripes + flowers
 	// ~ips = [140, 141, 123, 191]; // stripes + flowers + ana + zebra
-	~ips = [195,126,177,174];
-	~spongeNames = ["stripes", "flowers", "ana", "zebra"];
+	// ~ips = [195,126,177,174];
+	~ips = [194,126,104,174];
+	// ~spongeNames = ["stripes", "flowers", "ana", "zebra"];
+	~spongeNames = ["stripes", "flowers", "brown", "zebra"];
+	~classes = [~cSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge];
 	~transpose = 0;
 	~sponges = IdentityDictionary.new();
 	~voices = IdentityDictionary.new();
 
+	~numDots = 32;  // For Pat's video.
+	~dotArrays = Array.fill2D(~ips.size, ~numDots, {0});
+	~patsAddress = NetAddr("224.0.0.1", 8888);
 	// x = ~cSponge.value( ~ipsPrefix ++ 97, \sponge, Server.default );
 	// x.prep;
 	// x.sponge.hold_(true);
 	~ips.do({ |i, j|
 		// var sym = ("sponge_" ++ i.asAscii).asSymbol;
 		var sym = (~spongeNames[j] ++ "_" ++ i).asSymbol;
-		~sponges.put( sym, ~cSponge.value( ~ipsPrefix ++ i, sym, Server.default ) );
-		~sponges[sym].prep;
+		~sponges.put( sym, ~classes[j].value( ~ipsPrefix ++ i, sym, Server.default ) );
+		~sponges[sym].prep; // The master is the first sponge: stripes
 		s.sync;
 		1.wait;
 		~sponges[sym].sponge.hold_(true);
@@ -94,7 +103,8 @@
 				fsrMuteThreshold: 0.85, // larger number = muting is easier
 				fmId: j + 20,
 				relTime: 0.2,
-				server: s
+				server: s,
+				withLoop: (~classes[0] == ~cSponge )
 			)
 		);
 		///////////////
@@ -103,13 +113,25 @@
 		~voices.at(sym).do({|i| i.prep});
 		s.sync;
 		1.wait;
-		
+		////////////////////  To send controls to Pat's videos.
+		~sponges.at(sym).sponge.action_(
+			~sponges.at(sym).sponge.action.addFunc({ |msg|
+				var val;
+				val = msg[0].linlin(0,1023,-1.0,1.0);
+				~dotArrays[j] = ~dotArrays[j].rotate(-1);
+				~dotArrays[j].put(~numDots - 1, val);
+				~dotArrays[j].do({ |value, index|
+					~patsAddress.sendMsg("/video_wave" +/+ ~spongeNames[j], index, value);
+					~patsAddress.sendMsg("/video_wave_c" +/+ ~spongeNames[j], index, value);
+				});
+			});
+		);
 		sym.post; " ready.".postln;
 	});
 	s.sync;
 
 	// Make Jack connections.
-	8.do({ |i|
+	12.do({ |i|
 		var string;
 		string = "jack_connect" + ~scJackName ++ (i+1) + ~reaperInJackName ++ (i+1);
 		string.unixCmd;
@@ -127,6 +149,12 @@
      jack_connect rvb:outL REAPER:in31
      jack_connect rvb:outR REAPER:in32".unixCmd;
 
+	2.do({ |i|
+		var string =
+		"jack_connect system:capture_" ++ (i+1) + ~scJackNameIn ++ (i+1);
+		string.unixCmd;
+	});
+
 	~ips.do({ |i,j|
 		var sym = (~spongeNames[j] ++ "_" ++ i).asSymbol;
 		~sponges[sym].sponge.hold_(false);
@@ -140,3 +168,33 @@
 
 
 
+
+~sponges[\zebra_174].
+
+s.meter
+
+x = Synth.tail(s, \noiseAccu, [\ffreq, 1000]);
+
+p = Pbind(
+	\instrument, \noiseAccu,
+	\ffreq, Pwhite(800,8000),
+	\rq, Pwhite(5, 0.5),
+	\dur, Pwhite(0.1, 1.0),
+	\db, -20
+).play;
+p.stop;
+
+
+s.queryAllNodes
+// mapper amplitude à amplitude du sinus.
+
+~sponges[\stripes_195].slaveSponges[0].defName
+~sponges[\flowers_126].masterSponge;
+~sponges[\zebra_174].isSlave;
+
+slaveSponges[2].
+
+// IP mac mini patrick@192.168.0.150  pw: mozart
+
+~cSponge
+~cSimpleSponge

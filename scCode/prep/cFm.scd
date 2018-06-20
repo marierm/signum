@@ -2,7 +2,7 @@
 // Needs a path to an interpolator, a sponge, list of notes and list of chords.
 
 ~cFmManager = {
-	arg interpolatorPath, cSponge, notes, chords, outBus=0, fsrMuteThreshold=0.85, fmId=20, relTime=0.2, server;
+	arg interpolatorPath, cSponge, notes, chords, outBus=0, fsrMuteThreshold=0.85, fmId=20, relTime=0.2, server, withLoop=true;
 	var interpolator, frozen = false, numInterpolatorDim = 6, numAccelAxes = 6;
 	var numFSR = 2, numNotes;
 	var ampBus, globalAmpBus, group, inputs, damper, ampExtractor, globalAmp;
@@ -128,17 +128,17 @@
 		
 		looperBus = Bus.audio(server, 2);
 		looperXfade = 1.0;
-		myLooper = ~cLooper.value(
-			inBus: looperBus,
-			id: fmId,
-			outBus: outBus,
-			numChan: 2,
-			lag: looperXfade,
-			bufDur: 60,
-			server: server
-		);
-		myLooper.prep;
-
+		withLoop.if{ // If this is the master, allow loops.
+			myLooper = ~cLooper.value(
+				inBus: looperBus,
+				id: fmId,
+				outBus: outBus,
+				numChan: 2,
+				lag: looperXfade,
+				server: server
+			);
+			myLooper.prep;
+		};
 		// This stores the index of the \interpol control input.
 		// Is there a better way to do this?
 		interpolId = SynthDescLib.global[

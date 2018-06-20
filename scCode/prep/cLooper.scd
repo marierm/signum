@@ -49,7 +49,7 @@
 				SendTrig.kr(t_trig, id, phasor); // send duration of loop to sclang.
 			}).add;
 			server.sync;
-			oscFunc = OSCFunc({ |msg|
+			oscFunc = OSCFunc({ |msg| // Triggered when recording is stopped.
 				var msgId;
 				msgId = msg[2];
 				(msgId == id).if({
@@ -89,20 +89,31 @@
 		nextLoopId = 0;
 	};
 
-	var stopPlaybackSingleLoop = { |dur=17|
+	var stopPlaybackSingleLoop = { |dur=1|
 		isPlaying[nextLoopToStop].if({
-			loopPlayers[nextLoopToStop].set(\gate, 0);
+			loopPlayers[nextLoopToStop].release(dur);
 			isPlaying[nextLoopToStop] = false;
 			server.makeBundle(dur, {  
 				recBuffers[nextLoopToStop].zero;
 			});
 			nextLoopToStop = (nextLoopToStop + 1) % numLoops;
+			(nextLoopToStop == nextLoopId).if({
+				nextLoopToStop = 0;
+				nextLoopId = 0;
+			});
 		},{
 			"Trying to stop non-playing loop.".postln;
+			"Reseting nextLoopToStop to zero.".postln;
+			nextLoopToStop = 0;
+			nextLoopId = 0;
 		});
 		// nextLoopId = 0;
 	};
 
+	var killAllLoops = {
+		stopPlayback.value(0.5);
+		"Stopping all loops.".postln;
+	};
 
 	var toggleRec = {
 		// isPlaying.not.if({
@@ -164,6 +175,7 @@
 		toggleRec: { toggleRec.value },
 		stopPlayback: { |event, dur| stopPlayback.value(dur) },
 		stopPlaybackSingleLoop: { stopPlaybackSingleLoop.value },
+		killAllLoops: { killAllLoops.value },
 		freeMe: { freeMe.value }
 	);
 }

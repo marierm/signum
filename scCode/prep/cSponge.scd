@@ -18,14 +18,27 @@
 	var popVoice = 2;
 	var flmVoice = 3;
 	var feuVoice = 4;
+	var slaveSponges=List[];
+	var isSlave=false;
 
-	var prep = {
+	var addSlaveSponge = { |sponge|
+		sponge.notNil.if({
+			slaveSponges.add(sponge);
+		});
+	};
+	
+	var prep = { |thisEnvironment, masterSponge|
 		server = server ? Server.default;
 		ip.isNil.if({
 			netAddress = nil;
 		},{
 			netAddress = NetAddr(ip, 50502);
 		});
+
+		// (masterSponge==thisEnvironment).not.if({
+		// 	isSlave = true;
+		// 	masterSponge.addSlaveSponge(thisEnvironment);
+		// });
 		server.waitForBoot({
 			sponge = SpongeFeather(
 				"/sponge",
@@ -59,6 +72,12 @@
 								\stop.post; j.postln;
 								try {
 									~voices.at(defName)[j].stopMe;
+									~voices.at(defName)[j].looper.killAllLoops;
+									slaveSponges.do({ |sponge|
+										~voices.at(sponge.defName)[j].stopMe; // kill voices
+										~voices.at(sponge.defName)[j].looper.killAllLoops; // kill loops
+										sponge.butts.mode_(pitchMode); // switch to pitch mode
+									});
 								};
 							},
 							{ //  When left hand, key 1 is held.
@@ -194,7 +213,6 @@
 			// 	buttState: 0
 			// );
 
-			// button 8 controls looper.
 			butts.modes[pitchMode].addFunc(
 				button: 8,
 				function: {
@@ -213,11 +231,11 @@
 				levels: [1],
 				buttState: 1
 			);
-						butts.modes[pitchMode].addFunc(
+			butts.modes[pitchMode].addFunc(
 				button: 7,
 				function: {
-					"Stop loop playback 1.".post;
-					~voices.at(defName)[fmVoice].looper.stopPlayback(1);
+					"Stop loop playback single loop.".post;
+					~voices.at(defName)[fmVoice].looper.stopPlaybackSingleLoop(1);
 				},
 				levels: [1],
 				buttState: 1
@@ -720,7 +738,10 @@
 	(
 		netAddress: { netAddress },
 		sponge: { sponge },
-		prep: { prep.value },
+		slaveSponges: { slaveSponges },
+		isSlave: { isSlave },
+		addSlaveSponge: { |event, sponge| addSlaveSponge.value(sponge) },
+		prep: { |event, masterSponge| prep.value(event, masterSponge) },
 		butts: { butts },
 		close: { close.value },
 		defName: { defName }
