@@ -104,7 +104,7 @@
 				fmId: j + 20,
 				relTime: 0.2,
 				server: s,
-				withLoop: (~classes[0] == ~cSponge )
+				withLoop: (~classes[j] == ~cSponge )
 			)
 		);
 		///////////////
