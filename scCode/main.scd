@@ -1,8 +1,15 @@
+// TEST
+x = {SinOsc.ar(([54,56,58,60]+12).midicps, 0, 0.1)}.play; 
+x.free;
+s.meter;
+
 // Stop playback in harmo modes: does it work?
 // Make option to stop loops in the order they appeared.
 // Find a way to make inheritance.
 
 // Pops did not stop with sponge zebra.
+
+
 (
 {
 	~scJackName="SuperCollider:out_"; //for Jack connections
@@ -18,9 +25,11 @@
 
 	// ~cond = Condition.new;
 	("reaper5" + ~rppFilePath).unixCmd;
-	"killall jconvolver;".unixCmd;
+	// "killall jconvolver;".unixCmd;
+	"killall zita-rev1;".unixCmd;
 	0.1.wait;
-	"jconvolver -N rvb ~/docs/soundBank/ir/True\\ M7/Halls/amsterdamHall.conf".unixCmd;
+	// "jconvolver -N rvb ~/docs/soundBank/ir/True\\ M7/Halls/amsterdamHall.conf".unixCmd;
+	"zita-rev1 -name rvb".unixCmd;
 	s.bootSync;
 	"/home/marierm/scripts/jackDisconnectEverything.py".unixCmd;
 	"prep/cSponge.scd".loadRelative;
@@ -35,14 +44,13 @@
 	
 	s.sync;
 	1.wait;
-	// ~ipsPrefix = "192.168.109.";
+	~ipsPrefix = "192.168.109.";
 	// ~ips = (14..18);
 	// ~ipsPrefix = "192.168.109.";
 	// ~ips = [191];
 	// ~ips = (97..98);
 	// ~ipsPrefix = "10.42.0.";
-	~ipsPrefix = "192.168.0."; // for sudafed
-	// ~ips = [140]; // stripes
+	// ~ipsPrefix = "192.168.0."; // for sudafed
 	// ~ips = [123]; // ana
 	// ~ips = [190]; // brown
 	// ~ips = [140]; // flowers
@@ -51,10 +59,13 @@
 	// ~ips = [123, 140, 141]; // ana + stripes + flowers
 	// ~ips = [140, 141, 123, 191]; // stripes + flowers + ana + zebra
 	// ~ips = [195,126,177,174];
-	~ips = [194,126,104,174];
+	// ~ips = [194,126,104,174];
 	// ~spongeNames = ["stripes", "flowers", "ana", "zebra"];
-	~spongeNames = ["stripes", "flowers", "brown", "zebra"];
+	~ips = [103, 111, 86, 109];
+	~spongeNames = ["stripes", "flowers", "ana", "brown"];
 	~classes = [~cSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge];
+	// ~spongeNames = ["stripes", "flowers", "brown", "zebra"];
+	// ~classes = [~cSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge];
 	~transpose = 0;
 	~sponges = IdentityDictionary.new();
 	~voices = IdentityDictionary.new();
@@ -114,19 +125,19 @@
 		s.sync;
 		1.wait;
 		////////////////////  To send controls to Pat's videos.
-		~sponges.at(sym).sponge.action_(
-			~sponges.at(sym).sponge.action.addFunc({ |msg|
-				var val;
-				val = msg[0].linlin(0,1023,-1.0,1.0);
-				~dotArrays[j] = ~dotArrays[j].rotate(-1);
-				~dotArrays[j].put(~numDots - 1, val);
-				~dotArrays[j].do({ |value, index|
-					~patsAddress.sendMsg("/video_wave" +/+ ~spongeNames[j], index, value);
-					~patsAddress.sendMsg("/video_wave_c" +/+ ~spongeNames[j], index, value);
-				});
-			});
-		);
-		sym.post; " ready.".postln;
+		// ~sponges.at(sym).sponge.action_(
+		// 	~sponges.at(sym).sponge.action.addFunc({ |msg|
+		// 		var val;
+		// 		val = msg[0].linlin(0,1023,-1.0,1.0);
+		// 		~dotArrays[j] = ~dotArrays[j].rotate(-1);
+		// 		~dotArrays[j].put(~numDots - 1, val);
+		// 		~dotArrays[j].do({ |value, index|
+		// 			~patsAddress.sendMsg("/video_wave" +/+ ~spongeNames[j], index, value);
+		// 			~patsAddress.sendMsg("/video_wave_c" +/+ ~spongeNames[j], index, value);
+		// 		});
+		// 	});
+		// );
+		// sym.post; " ready.".postln;
 	});
 	s.sync;
 
@@ -144,10 +155,10 @@
      jack_connect REAPER:out5 system:playback_5
      jack_connect REAPER:out6 system:playback_6".unixCmd;
 	
-	"jack_connect REAPER:out7 rvb:inL
-     jack_connect REAPER:out8 rvb:inR
-     jack_connect rvb:outL REAPER:in31
-     jack_connect rvb:outR REAPER:in32".unixCmd;
+	"jack_connect REAPER:out7 rvb:in.L
+     jack_connect REAPER:out8 rvb:in.R
+     jack_connect rvb:out.L REAPER:in31
+     jack_connect rvb:out.R REAPER:in32".unixCmd;
 
 	2.do({ |i|
 		var string =
