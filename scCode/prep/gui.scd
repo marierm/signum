@@ -28,7 +28,7 @@
 	oscFuncs = spongeNames.collect({ |spongeName,i|
 		OSCFunc({ |msg|
 			{
-				octaveViews[i].string_(msg[1].asString);
+				octaveViews[i].string_(msg[1].asInteger.asString);
 			}.defer;
 			msg.postln;
 		}, "" +/+ spongeName);
