@@ -1,5 +1,5 @@
 ~cLooper = {
-	arg inBus, id=0, outBus=0, numChan=2, lag=1.0, bufDur=60, numLoops=16, server;
+	arg inBus, id=0, outBus=0, numChan=2, lag=1.0, bufDur=45, numLoops=30, server;
 	var isRec, isPlaying, recBuffers, bus;
 	var recLev = 0.9, preLev = 0.9;
 	var oscFunc, recorder, loopPlayers;
@@ -123,6 +123,8 @@
 			isRec = false;
 			task.stop;
 			task.reset;
+
+			NetAddr.localAddr.sendMsg("/sponge/recording", 0);
 			// task.postln;
 		},{
 			isPlaying[nextLoopId].if({
@@ -138,12 +140,14 @@
 				]);
 				isRec = true;
 				"Starting rec on buf ".post; nextLoopId.postln;
+				NetAddr.localAddr.sendMsg("/sponge/recording", 1);
 				// Do not record for more than bufDur seconds.
 				task.stop; task.reset; // this may not be necessary. // Double check.
 				task = Task({
 					bufDur.wait;
 					recorder.set(\t_trig, 1.0);
 					"Auto stopping loop rec.".postln;
+					NetAddr.localAddr.sendMsg("/sponge/recording", 0);
 					isRec = false;
 				}).start;
 			});

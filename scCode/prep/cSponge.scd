@@ -235,7 +235,7 @@
 				button: 7,
 				function: {
 					"Stop loop playback single loop.".post;
-					~voices.at(defName)[fmVoice].looper.stopPlaybackSingleLoop(1);
+					~voices.at(defName)[fmVoice].looper.stopPlaybackSingleLoop(5);
 				},
 				levels: [1],
 				buttState: 1
@@ -342,7 +342,7 @@
 				button: 8,
 				function: {
 					\stopPlayback.post; h.postln;
-					~voices.at(defName)[fmVoice].looper.stopPlayback;
+					~voices.at(defName)[fmVoice].looper.stopPlayback(17);
 				},
 				levels: [1],
 				buttState: 1
@@ -467,7 +467,7 @@
 				button: 8,
 				function: {
 					"Stop loop playback ".post; h.postln;
-					~voices.at(defName)[meloVoice].looper.stopPlayback;
+					~voices.at(defName)[meloVoice].looper.stopPlayback(17);
 				},
 				levels: [1],
 				buttState: 1

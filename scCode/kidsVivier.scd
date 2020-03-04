@@ -1,14 +1,3 @@
-// The interface (sensing technology)
-// Its evolution over the last 13 years
-// Mapping strategies
-// Mapping the buttons
-// Collaboration with Myriam (Origami)
-// Collaboration with Marc (Origami again)
-// Improvisation (free improv with acoustic musicians)
-// The quintet (with Preston, Francis, Ana, Émilie)
-// The score
-// What's next?
-
 // TEST
 x = {SinOsc.ar(([54,56,58,60]+12).midicps, 0, 0.1)}.play;
 x = {SinOsc.ar(([60]+12).midicps, 0, 0.1)}.play;
@@ -27,21 +16,24 @@ s.meter;
 {
 	~scJackName="SuperCollider:out_"; //for Jack connections
 	~scJackNameIn="SuperCollider:in_"; //for Jack connections
+	// ~scJackName="supernova:output_"; //for Jack connections
 	~reaperInJackName="REAPER:in";
 
-	~rppFilePath = "../signumMix/kamloopsMix.RPP".resolveRelative;
+	// ~rppFilePath = "../signumMix/kamloopsMix.RPP".resolveRelative;
+	~rppFilePath = "../signumMix/kidsVivierMix.RPP".resolveRelative;
 
 	"killall reaper".unixCmd; //kill reaper.
 	// "nmcli con up sponger".unixCmd; // Make this computer a hotspot.
 	// "nmcli con up sudafed".unixCmd; // Connect to sudafed
 
+	// ~cond = Condition.new;
 	0.1.wait;
 	("reaper" + ~rppFilePath).unixCmd;
-	"killall jconvolver;".unixCmd;
-	// "killall zita-rev1;".unixCmd;
+	// "killall jconvolver;".unixCmd;
+	"killall zita-rev1;".unixCmd;
 	0.1.wait;
-	"jconvolver -s default -N rvb ~/docs/soundBank/ir/True\\ M7/Halls/amsterdamHall.conf".unixCmd;
-	// "zita-rev1 -name rvb".unixCmd;
+	// "jconvolver -N rvb ~/docs/soundBank/ir/True\\ M7/Halls/amsterdamHall.conf".unixCmd;
+	"zita-rev1 -name rvb".unixCmd;
 	s.bootSync;
 	"/home/marierm/scripts/jackDisconnectEverything.py".unixCmd;
 	"prep/cSponge.scd".loadRelative;
@@ -56,17 +48,30 @@ s.meter;
 	
 	s.sync;
 	1.wait;
+	~ipsPrefix = "192.168.109.";
+	// ~ipsPrefix = "10.42.0.";
+	// ~ips = (14..18);
 	// ~ipsPrefix = "192.168.109.";
-	~ipsPrefix = "10.42.0.";
-	// ~ips = [103, 79, 111, 86, 109];
-	// ~spongeNames = ["stripes", "zebra", "flowers", "ana", "brown"];
-	// ~ips = [103, 79];
-	~ips = [140];
-	// ~ips = [191];//, 79];
-	~spongeNames = ["stripes"];
-	// ~spongeNames = ["zebra"];
-	// ~classes = [~cSponge, ~cSimpleSponge];
-	~classes = [~cSponge];//, ~cSponge];
+	// ~ips = [191];
+	// ~ips = (97..98);
+	// ~ipsPrefix = "10.42.0.";
+	// ~ipsPrefix = "192.168.0."; // for sudafed
+	// ~ips = [123]; // ana
+	// ~ips = [190]; // brown
+	// ~ips = [140]; // flowers
+	// ~ips = [140, 191]; // stripes + zebra
+	// ~ips = [123, 141]; // ana + flowers
+	// ~ips = [123, 140, 141]; // ana + stripes + flowers
+	// ~ips = [140, 141, 123, 191]; // stripes + flowers + ana + zebra
+	// ~ips = [195,126,177,174];
+	// ~ips = [194,126,104,174];
+	// ~spongeNames = ["stripes", "flowers", "ana", "zebra"];
+	// ~ips = [103]; //, 111, 86, 109];
+	~ips = [103, 79, 111, 86, 109];
+	~spongeNames = ["stripes", "zebra", "flowers", "ana", "brown"];
+	~classes = [~cSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge];
+	// ~spongeNames = ["stripes", "flowers", "brown", "zebra"];
+	// ~classes = [~cSponge, ~cSimpleSponge, ~cSimpleSponge, ~cSimpleSponge];
 	~transpose = 0;
 	~sponges = IdentityDictionary.new();
 	~voices = IdentityDictionary.new();
@@ -244,10 +249,10 @@ s.meter;
      jack_connect REAPER:out5 system:playback_5
      jack_connect REAPER:out6 system:playback_6".unixCmd;
 	
-	"jack_connect REAPER:out7 rvb:inL
-     jack_connect REAPER:out8 rvb:inR
-     jack_connect rvb:outL REAPER:in31
-     jack_connect rvb:outR REAPER:in32".unixCmd;
+	"jack_connect REAPER:out7 rvb:in.L
+     jack_connect REAPER:out8 rvb:in.R
+     jack_connect rvb:out.L REAPER:in31
+     jack_connect rvb:out.R REAPER:in32".unixCmd;
 
 	2.do({ |i|
 		var string =

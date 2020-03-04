@@ -26,12 +26,26 @@
 	);
 
 	oscFuncs = spongeNames.collect({ |spongeName,i|
-		OSCFunc({ |msg|
-			{
-				octaveViews[i].string_(msg[1].asInteger.asString);
-			}.defer;
-			msg.postln;
-		}, "" +/+ spongeName);
+		[
+			OSCFunc({ |msg|
+				{
+					octaveViews[i].string_(msg[1].asInteger.asString);
+				}.defer;
+				msg.postln;
+			}, "" +/+ spongeName),
+			OSCFunc({ |msg|
+				(msg[1] == 1).if({
+					{
+						octaveViews[i].stringColor_(Color.red());
+					}.defer;
+				},{
+					{
+						octaveViews[i].stringColor_(Color.black());
+					}.defer;
+				});
+				msg.postln;
+			}, "/sponge/recording");
+		]
 	});
 	
 	(
